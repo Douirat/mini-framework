@@ -114,12 +114,13 @@ body {
 /* Player */
 .player {
     position: absolute;
-    width: 80%;
-    height: 80%;
-    top: 10%;
-    left: 10%;
+    width: 40px; /* Fixed size, consistent with backend collision size */
+    height: 40px;
+    top: 0;
+    left: 0;
     border-radius: 50%;
     background-size: contain;
+    z-index: 5; /* Above cells, below bombs/explosions */
 }
 
 .player-1 { background-color: blue; }
