@@ -44,12 +44,7 @@ function reducer(state = initialState, action) {
 
 const store = FacileJS.createStore(reducer);
 
-// --- Components (omitted for brevity) ---
-function ChatComponent() { /* ... */ }
-function NicknameScreen() { /* ... */ }
-function LobbyScreen() { /* ... */ }
-function BoardComponent({ map, players }) { /* ... */ }
-function GameScreen() { /* ... */ }
+// --- Components ---
 
 function App() {
   const state = store.getState();
