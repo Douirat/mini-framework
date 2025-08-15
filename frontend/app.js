@@ -167,19 +167,39 @@ function BoardComponent({ map, players, bombs, explosions }) {
     const playerElements = players.map(p => {
         return FacileJS.createElement('div', {
             class: `player player-${p.id}`,
-            style: `transform: translate(${p.x}px, ${p.y}px);` // Using raw pixel values now
+            style: `transform: translate(${p.x}px, ${p.y}px);`
         });
     });
-    return FacileJS.createElement('div', { class: 'board', style: `grid-template-columns: repeat(${map[0].length}, 50px);` }, ...cells, ...playerElements);
+
+    const bombElements = (bombs || []).map(b => {
+        return FacileJS.createElement('div', {
+            class: 'bomb',
+            style: `transform: translate(${b.x * 50}px, ${b.y * 50}px);`
+        });
+    });
+
+    const explosionElements = (explosions || []).flatMap(exp =>
+        exp.cells.map(cell =>
+            FacileJS.createElement('div', {
+                class: 'explosion',
+                style: `transform: translate(${cell.x * 50}px, ${cell.y * 50}px);`
+            })
+        )
+    );
+
+    return FacileJS.createElement('div', {
+        class: 'board',
+        style: `grid-template-columns: repeat(${map[0].length}, 50px);`
+    }, ...cells, ...playerElements, ...bombElements, ...explosionElements);
 }
 
 function GameScreen() {
-    const { map, players } = store.getState().gameState;
+    const { map, players, bombs, explosions } = store.getState().gameState;
     if (!map || map.length === 0) {
         return FacileJS.createElement('div', {}, 'Loading game...');
     }
     return FacileJS.createElement('div', { class: 'game-container' },
-        BoardComponent({ map, players }),
+        BoardComponent({ map, players, bombs: bombs || [], explosions: explosions || [] }),
         ChatComponent()
     );
 }

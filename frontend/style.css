@@ -88,6 +88,7 @@ body {
 
 /* Game Board */
 .board {
+    position: relative; /* This is the containing block for players/bombs */
     display: grid;
     /* Grid size will be set by JS */
     border: 2px solid #666;
