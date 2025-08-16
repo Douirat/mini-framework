@@ -154,42 +154,57 @@ function LobbyScreen() {
 }
 
 function BoardComponent({ map, players, bombs, explosions }) {
+    const CELL_SIZE = 50;
     const getTileClass = (tile) => {
         if (tile === TILE.WALL) return 'cell wall';
         if (tile === TILE.BLOCK) return 'cell block';
         return 'cell';
     };
+
+    // Create the base grid cells
     const cells = map.flat().map((tile, i) => {
         const x = i % map[0].length;
         const y = Math.floor(i / map[0].length);
         return FacileJS.createElement('div', { class: getTileClass(tile), 'data-x': x, 'data-y': y });
     });
+
+    // Create player elements that will be placed onto the grid
     const playerElements = players.map(p => {
+        const gridColumn = Math.floor(p.x / CELL_SIZE) + 1;
+        const gridRow = Math.floor(p.y / CELL_SIZE) + 1;
+        // We add a fine-grained transform for smooth movement *within* a cell
+        const innerX = p.x % CELL_SIZE;
+        const innerY = p.y % CELL_SIZE;
+
         return FacileJS.createElement('div', {
             class: `player player-${p.id}`,
-            style: `transform: translate(${p.x}px, ${p.y}px);`
+            style: `grid-column-start: ${gridColumn}; grid-row-start: ${gridRow}; transform: translate(${innerX}px, ${innerY}px);`
         });
     });
 
+    // Create bomb elements to be placed on the grid
     const bombElements = (bombs || []).map(b => {
         return FacileJS.createElement('div', {
             class: 'bomb',
-            style: `transform: translate(${b.x * 50}px, ${b.y * 50}px);`
+            style: `grid-column-start: ${b.x + 1}; grid-row-start: ${b.y + 1};`
         });
     });
 
+    // Create explosion elements to be placed on the grid
     const explosionElements = (explosions || []).flatMap(exp =>
         exp.cells.map(cell =>
             FacileJS.createElement('div', {
                 class: 'explosion',
-                style: `transform: translate(${cell.x * 50}px, ${cell.y * 50}px);`
+                style: `grid-column-start: ${cell.x + 1}; grid-row-start: ${cell.y + 1};`
             })
         )
     );
 
+    // The board itself is a grid container. The cells create the grid structure,
+    // and the players/bombs/explosions are placed on top of it.
     return FacileJS.createElement('div', {
         class: 'board',
-        style: `grid-template-columns: repeat(${map[0].length}, 50px);`
+        style: `grid-template-columns: repeat(${map[0].length}, ${CELL_SIZE}px); grid-template-rows: repeat(${map.length}, ${CELL_SIZE}px);`
     }, ...cells, ...playerElements, ...bombElements, ...explosionElements);
 }
 

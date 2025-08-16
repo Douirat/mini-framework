@@ -88,17 +88,16 @@ body {
 
 /* Game Board */
 .board {
-    position: relative; /* This is the containing block for players/bombs */
     display: grid;
-    /* Grid size will be set by JS */
+    /* Grid size and rows are now set by JS */
     border: 2px solid #666;
-    background-color: #5a8c5a; /* Greenish grass color */
+    background-color: #5a8c5a;
+    /* Each cell will implicitly create the grid structure */
 }
 
 .cell {
-    width: 50px; /* Example size */
+    width: 50px;
     height: 50px;
-    position: relative;
     background-size: cover;
 }
 
@@ -108,20 +107,19 @@ body {
 }
 
 .block {
-    background-color: #d2b48c; /* Tan/brown color */
+    background-color: #d2b48c;
     border: 1px solid #b08f6c;
 }
 
 /* Player */
+/* Players are now grid items, placed into a cell */
 .player {
-    position: absolute;
-    width: 40px; /* Fixed size, consistent with backend collision size */
+    width: 40px;
     height: 40px;
-    top: 0;
-    left: 0;
     border-radius: 50%;
     background-size: contain;
-    z-index: 5; /* Above cells, below bombs/explosions */
+    z-index: 5;
+    /* The transform for smooth movement is applied inline */
 }
 
 .player-1 { background-color: blue; }
@@ -130,19 +128,21 @@ body {
 .player-4 { background-color: yellow; }
 
 /* Bomb */
+/* Bombs are grid items, placed into a cell */
 .bomb {
-    position: absolute;
     width: 50px;
     height: 50px;
     background-color: black;
     border-radius: 50%;
     border: 2px solid white;
     z-index: 10;
+    align-self: center;
+    justify-self: center;
 }
 
 /* Explosion */
+/* Explosions are grid items, placed into a cell */
 .explosion {
-    position: absolute;
     width: 50px;
     height: 50px;
     background-color: orange;
