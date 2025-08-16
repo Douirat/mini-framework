@@ -93,7 +93,7 @@ wss.on('connection', (ws) => {
 
     switch (data.type) {
       case 'JOIN_GAME':
-        if (lobbyState.players.length < 4 && lobbyState.status === 'waiting') {
+        if (lobbyState.players.length < 2 && lobbyState.status === 'waiting') {
           const newPlayer = { id: lobbyState.players.length + 1, ws: ws, nickname: data.payload.nickname };
           lobbyState.players.push(newPlayer);
           ws.playerId = newPlayer.id;
