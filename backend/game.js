@@ -39,14 +39,17 @@ function createInitialGameState(players) {
     ];
     const gamePlayers = players.map((p, i) => ({
         id: p.id, nickname: p.nickname, ...initialPositions[i],
-        size: playerSize, lives: 3, speed: 2, bombs: 1, flame: 1,
+        size: playerSize, lives: 3, speed: 2, bombs: 1, flame: 1, isAlive: true,
     }));
-    return { map, players: gamePlayers, bombs: [], explosions: [] };
+    return { map, players: gamePlayers, bombs: [], explosions: [], powerUps: [] };
 }
 
 function handlePlaceBomb(player, gameState) {
     const { players, bombs } = gameState;
     const playerState = players.find(p => p.id === player.id);
+
+    if (!playerState || !playerState.isAlive) return;
+
     const cellX = Math.floor((playerState.x + playerState.size / 2) / CELL_SIZE);
     const cellY = Math.floor((playerState.y + playerState.size / 2) / CELL_SIZE);
     const alreadyHasBomb = bombs.some(b => b.x === cellX && b.y === cellY);
@@ -76,6 +79,12 @@ function handleExplosions(gameState) {
                 newExplosionCells.add(`${x},${y}`);
                 if (tile === TILE.BLOCK) {
                     map[y][x] = TILE.EMPTY;
+                    // Chance to spawn a power-up
+                    if (Math.random() < 0.3) { // 30% chance
+                        const powerUpTypes = ['flame', 'bombs', 'speed'];
+                        const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+                        gameState.powerUps.push({ x, y, type });
+                    }
                     break;
                 }
             }
@@ -85,10 +94,15 @@ function handleExplosions(gameState) {
         const explosionData = { cells: Array.from(newExplosionCells).map(s => ({x: parseInt(s.split(',')[0]), y: parseInt(s.split(',')[1])})), timer: 0.5 };
         explosions.push(explosionData);
         players.forEach(player => {
+            if (!player.isAlive) return;
+
             const playerCellX = Math.floor((player.x + player.size / 2) / CELL_SIZE);
             const playerCellY = Math.floor((player.y + player.size / 2) / CELL_SIZE);
             if (newExplosionCells.has(`${playerCellX},${playerCellY}`)) {
                 player.lives--;
+                if (player.lives <= 0) {
+                    player.isAlive = false;
+                }
             }
         });
     }
@@ -124,6 +138,7 @@ function isColliding(x, y, size, map) {
 }
 
 function handlePlayerMove(player, direction, gameState) {
+    if (!player.isAlive) return;
     const { speed, size } = player;
     const { map } = gameState;
 
@@ -149,6 +164,28 @@ function handlePlayerMove(player, direction, gameState) {
     if (player.x + size > MAP_WIDTH_PX) player.x = MAP_WIDTH_PX - size;
     if (player.y < 0) player.y = 0;
     if (player.y + size > MAP_HEIGHT_PX) player.y = MAP_HEIGHT_PX - size;
+
+    // Check for power-up collection
+    const playerCellX = Math.floor((player.x + size / 2) / CELL_SIZE);
+    const playerCellY = Math.floor((player.y + size / 2) / CELL_SIZE);
+    const powerUpIndex = gameState.powerUps.findIndex(p => p.x === playerCellX && p.y === playerCellY);
+
+    if (powerUpIndex !== -1) {
+        const powerUp = gameState.powerUps[powerUpIndex];
+        switch (powerUp.type) {
+            case 'bombs':
+                player.bombs++;
+                break;
+            case 'flame':
+                player.flame++;
+                break;
+            case 'speed':
+                player.speed += 0.5;
+                break;
+        }
+        // Remove the power-up from the array
+        gameState.powerUps.splice(powerUpIndex, 1);
+    }
 }
 
 module.exports = {

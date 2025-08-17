@@ -20,7 +20,8 @@ const initialState = {
   nickname: '',
   lobby: { players: [], countdown: null, status: 'waiting' },
   chatMessages: [],
-  gameState: { map: [], players: [] },
+  gameState: { map: [], players: [], powerUps: [] },
+  winner: null,
 };
 
 function reducer(state = initialState, action) {
@@ -32,11 +33,13 @@ function reducer(state = initialState, action) {
     case 'UPDATE_COUNTDOWN':
       return { ...state, lobby: { ...state.lobby, countdown: action.payload } };
     case 'START_GAME':
-      return { ...state, screen: 'game', gameState: action.payload };
+      return { ...state, screen: 'game', gameState: action.payload, winner: null };
     case 'NEW_CHAT_MESSAGE':
       return { ...state, chatMessages: [...state.chatMessages, action.payload] };
     case 'GAME_STATE_UPDATE': // Server sends the whole state
         return { ...state, gameState: action.payload };
+    case 'GAME_OVER':
+        return { ...state, screen: 'gameover', winner: action.payload.winner };
     default:
       return state;
   }
@@ -76,6 +79,7 @@ function App() {
     switch (state.screen) {
         case 'lobby': screenComponent = LobbyScreen(); break;
         case 'game': screenComponent = GameScreen(); break;
+        case 'gameover': screenComponent = GameOverScreen(); break;
         default: screenComponent = NicknameScreen(); break;
     }
 
@@ -170,7 +174,7 @@ function LobbyScreen() {
     );
 }
 
-function BoardComponent({ map, players, bombs, explosions }) {
+function BoardComponent({ map, players, bombs, explosions, powerUps }) {
     const CELL_SIZE = 50;
     const getTileClass = (tile) => {
         if (tile === TILE.WALL) return 'cell wall';
@@ -186,12 +190,14 @@ function BoardComponent({ map, players, bombs, explosions }) {
     });
 
     // Create player elements. They are positioned absolutely.
-    const playerElements = players.map(p => {
-        return FacileJS.createElement('div', {
-            class: `player player-${p.id}`,
-            style: `transform: translate(${p.x}px, ${p.y}px);`
+    const playerElements = players
+        .filter(p => p.isAlive)
+        .map(p => {
+            return FacileJS.createElement('div', {
+                class: `player player-${p.id}`,
+                style: `transform: translate(${p.x}px, ${p.y}px);`
+            });
         });
-    });
 
     // Create bomb elements. They are positioned absolutely.
     const bombElements = (bombs || []).map(b => {
@@ -215,21 +221,58 @@ function BoardComponent({ map, players, bombs, explosions }) {
         })
     );
 
+    // Create power-up elements.
+    const powerUpElements = (powerUps || []).map(p => {
+        const x = p.x * CELL_SIZE;
+        const y = p.y * CELL_SIZE;
+        return FacileJS.createElement('div', {
+            class: `power-up ${p.type}`,
+            style: `transform: translate(${x}px, ${y}px);`
+        });
+    });
+
     // The board is a grid container for the cells, but also a relative
     // container for the absolutely positioned players, bombs, and explosions.
     return FacileJS.createElement('div', {
         class: 'board',
         style: `grid-template-columns: repeat(${map[0].length}, ${CELL_SIZE}px); grid-template-rows: repeat(${map.length}, ${CELL_SIZE}px);`
-    }, ...cells, ...playerElements, ...bombElements, ...explosionElements);
+    }, ...cells, ...powerUpElements, ...playerElements, ...bombElements, ...explosionElements);
+}
+
+function PlayerStatus({ players }) {
+    return FacileJS.createElement('div', { class: 'player-status-container' },
+        ...players.map(p => {
+            return FacileJS.createElement('div', { class: `player-status player-${p.id} ${p.isAlive ? '' : 'dead'}` },
+                FacileJS.createElement('span', { class: 'nickname' }, p.nickname),
+                FacileJS.createElement('span', { class: 'lives' }, `Lives: ${p.lives}`)
+            );
+        })
+    );
+}
+
+function GameOverScreen() {
+    const { winner } = store.getState();
+    const handlePlayAgain = () => {
+        window.location.reload();
+    };
+
+    const message = winner ? `${winner.nickname} Wins!` : "It's a Draw!";
+
+    return FacileJS.createElement('div', { class: 'container game-over-screen' },
+        FacileJS.createElement('h1', {}, 'Game Over'),
+        FacileJS.createElement('h2', {}, message),
+        FacileJS.createElement('button', { onclick: handlePlayAgain }, 'Play Again')
+    );
 }
 
 function GameScreen() {
-    const { map, players, bombs, explosions } = store.getState().gameState;
+    const { map, players, bombs, explosions, powerUps } = store.getState().gameState;
     if (!map || map.length === 0) {
         return FacileJS.createElement('div', {}, 'Loading game...');
     }
     return FacileJS.createElement('div', { class: 'game-container' },
-        BoardComponent({ map, players, bombs: bombs || [], explosions: explosions || [] }),
+        PlayerStatus({ players }),
+        BoardComponent({ map, players, bombs: bombs || [], explosions: explosions || [], powerUps: powerUps || [] }),
         ChatComponent()
     );
 }

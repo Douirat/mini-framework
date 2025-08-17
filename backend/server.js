@@ -60,6 +60,21 @@ function gameTick() {
 
     // 4. Broadcast the new state
     broadcast({ type: 'GAME_STATE_UPDATE', payload: mainGameState });
+
+    // 5. Check for win condition
+    const alivePlayers = mainGameState.players.filter(p => p.isAlive);
+    if (alivePlayers.length <= 1) {
+        clearInterval(gameLoopInterval);
+        const winner = alivePlayers.length === 1 ? alivePlayers[0] : null;
+        console.log('Game Over! Winner:', winner ? winner.nickname : 'Draw');
+        broadcast({
+            type: 'GAME_OVER',
+            payload: {
+                winner: winner ? { id: winner.id, nickname: winner.nickname } : null
+            }
+        });
+        mainGameState = null;
+    }
 }
 
 function startGameCountdown() {
