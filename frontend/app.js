@@ -44,15 +44,54 @@ function reducer(state = initialState, action) {
 
 const store = FacileJS.createStore(reducer);
 
+// --- Event Handlers (Framework-Compliant) ---
+const handleKeyDown = (e) => {
+    if (keyboardState.hasOwnProperty(e.code)) {
+        e.preventDefault();
+        keyboardState[e.code] = true;
+    }
+};
+
+const handleKeyUp = (e) => {
+    if (keyboardState.hasOwnProperty(e.code)) {
+        e.preventDefault();
+        keyboardState[e.code] = false;
+    }
+};
+
+const handleKeyPress = (e) => {
+    if (e.code === 'Space') {
+        if (store.getState().screen === 'game') {
+            e.preventDefault();
+            ws.send(JSON.stringify({ type: 'PLACE_BOMB' }));
+        }
+    }
+};
+
 // --- Components ---
 
 function App() {
-  const state = store.getState();
-  switch (state.screen) {
-    case 'lobby': return LobbyScreen();
-    case 'game': return GameScreen();
-    default: return NicknameScreen();
-  }
+    const state = store.getState();
+    let screenComponent;
+    switch (state.screen) {
+        case 'lobby': screenComponent = LobbyScreen(); break;
+        case 'game': screenComponent = GameScreen(); break;
+        default: screenComponent = NicknameScreen(); break;
+    }
+
+    // This wrapper div will handle all keyboard events.
+    // It needs a tabindex to be focusable.
+    return FacileJS.createElement('div',
+        {
+            class: 'app-container',
+            tabindex: '0',
+            autofocus: true, // Automatically focus on render
+            onkeydown: handleKeyDown,
+            onkeyup: handleKeyUp,
+            onkeypress: handleKeyPress,
+        },
+        screenComponent
+    );
 }
 
 // --- Game Loop and Input Handling ---
@@ -61,28 +100,6 @@ const keyboardState = {
     KeyW: false, KeyA: false, KeyS: false, KeyD: false,
 };
 
-document.addEventListener('keydown', (e) => {
-    if (keyboardState.hasOwnProperty(e.code)) {
-        e.preventDefault();
-        keyboardState[e.code] = true;
-    }
-});
-
-document.addEventListener('keyup', (e) => {
-    if (keyboardState.hasOwnProperty(e.code)) {
-        e.preventDefault();
-        keyboardState[e.code] = false;
-    }
-});
-
-document.addEventListener('keypress', (e) => {
-    if (e.code === 'Space') {
-        if (store.getState().screen === 'game') {
-            e.preventDefault();
-            ws.send(JSON.stringify({ type: 'PLACE_BOMB' }));
-        }
-    }
-});
 
 function gameLoop() {
     if (store.getState().screen === 'game') {
