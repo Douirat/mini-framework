@@ -95,35 +95,60 @@ function handleExplosions(gameState) {
     gameState.bombs = bombs.filter(b => b.timer > 0);
 }
 
-function handlePlayerMove(player, direction, gameState) {
-    let { x, y, speed, size } = player;
-    const { map } = gameState;
-    const newPos = { x, y };
-    if (direction.up) newPos.y -= speed;
-    if (direction.down) newPos.y += speed;
-    if (direction.left) newPos.x -= speed;
-    if (direction.right) newPos.x += speed;
-    if (newPos.x < 0) newPos.x = 0;
-    if (newPos.y < 0) newPos.y = 0;
-    if (newPos.x + size > MAP_WIDTH_PX) newPos.x = MAP_WIDTH_PX - size;
-    if (newPos.y + size > MAP_HEIGHT_PX) newPos.y = MAP_HEIGHT_PX - size;
-    const corners = [
-        { x: newPos.x, y: newPos.y }, { x: newPos.x + size, y: newPos.y },
-        { x: newPos.x, y: newPos.y + size }, { x: newPos.x + size, y: newPos.y + size },
+function isColliding(x, y, size, map) {
+    const points = [
+        { x: x, y: y },                         // Top-left
+        { x: x + size - 1, y: y },                  // Top-right
+        { x: x, y: y + size - 1 },                  // Bottom-left
+        { x: x + size - 1, y: y + size - 1 },          // Bottom-right
+        { x: x + size / 2, y: y },                  // Top-middle
+        { x: x + size / 2, y: y + size - 1 },          // Bottom-middle
+        { x: x, y: y + size / 2 },                  // Left-middle
+        { x: x + size - 1, y: y + size / 2 },          // Right-middle
     ];
-    let collision = false;
-    for (const corner of corners) {
-        const cellX = Math.floor(corner.x / CELL_SIZE);
-        const cellY = Math.floor(corner.y / CELL_SIZE);
-        if (map[cellY] && map[cellY][cellX] && (map[cellY][cellX] === TILE.WALL || map[cellY][cellX] === TILE.BLOCK)) {
-            collision = true;
-            break;
+
+    for (const point of points) {
+        const cellX = Math.floor(point.x / CELL_SIZE);
+        const cellY = Math.floor(point.y / CELL_SIZE);
+
+        if (cellX < 0 || cellX >= MAP_WIDTH_CELLS || cellY < 0 || cellY >= MAP_HEIGHT_CELLS) {
+            return true;
+        }
+
+        const tile = map[cellY][cellX];
+        if (tile === TILE.WALL || tile === TILE.BLOCK) {
+            return true;
         }
     }
-    if (!collision) {
-        player.x = newPos.x;
-        player.y = newPos.y;
+    return false;
+}
+
+function handlePlayerMove(player, direction, gameState) {
+    const { speed, size } = player;
+    const { map } = gameState;
+
+    let newX = player.x;
+    let newY = player.y;
+
+    if (direction.up) newY -= speed;
+    if (direction.down) newY += speed;
+    if (direction.left) newX -= speed;
+    if (direction.right) newX += speed;
+
+    const tempPlayer = { ...player, x: newX, y: player.y };
+    if (!isColliding(tempPlayer.x, tempPlayer.y, size, map)) {
+        player.x = newX;
     }
+
+    const tempPlayer2 = { ...player, y: newY };
+    if (!isColliding(tempPlayer2.x, tempPlayer2.y, size, map)) {
+        player.y = newY;
+    }
+
+    if (player.x < 0) player.x = 0;
+    if (player.x + size > MAP_WIDTH_PX) player.x = MAP_WIDTH_PX - size;
+    if (player.y < 0) player.y = 0;
+    if (player.y + size > MAP_HEIGHT_PX) player.y = MAP_HEIGHT_PX - size;
 }
 
 module.exports = {
