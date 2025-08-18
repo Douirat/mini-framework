@@ -244,6 +244,7 @@ function PlayerStatus({ players }) {
         ...players.map(p => {
             return FacileJS.createElement('div', { class: `player-status player-${p.id} ${p.isAlive ? '' : 'dead'}` },
                 FacileJS.createElement('span', { class: 'nickname' }, p.nickname),
+                FacileJS.createElement('span', { class: 'score' }, `Score: ${p.score}`),
                 FacileJS.createElement('span', { class: 'lives' }, `Lives: ${p.lives}`)
             );
         })
@@ -265,14 +266,30 @@ function GameOverScreen() {
     );
 }
 
+function GameTimer() {
+    const { gameTimer } = store.getState().gameState;
+
+    const formatTime = (seconds) => {
+        if (seconds < 0) seconds = 0;
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    return FacileJS.createElement('div', { class: 'game-timer' }, `Time: ${formatTime(gameTimer || 0)}`);
+}
+
 function GameScreen() {
     const { map, players, bombs, explosions, powerUps } = store.getState().gameState;
     if (!map || map.length === 0) {
         return FacileJS.createElement('div', {}, 'Loading game...');
     }
     return FacileJS.createElement('div', { class: 'game-container' },
+        GameTimer(),
         PlayerStatus({ players }),
-        BoardComponent({ map, players, bombs: bombs || [], explosions: explosions || [], powerUps: powerUps || [] }),
-        ChatComponent()
+        FacileJS.createElement('div', { class: 'game-main-area' },
+            BoardComponent({ map, players, bombs: bombs || [], explosions: explosions || [], powerUps: powerUps || [] }),
+            ChatComponent()
+        )
     );
 }

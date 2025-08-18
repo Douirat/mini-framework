@@ -93,8 +93,8 @@ function patchProps(el, oldProps, newProps) {
 function patch(parentEl, oldVNode, newVNode, index = 0) {
     const el = parentEl.childNodes[index];
 
-    if (!el) {
-        parentEl.appendChild(render(newVNode));
+    if (newVNode === undefined) {
+        el.remove();
         return;
     }
 
@@ -111,13 +111,13 @@ function patch(parentEl, oldVNode, newVNode, index = 0) {
         return;
     }
 
-    if (oldV.tag !== newV.tag) {
-        el.replaceWith(render(newV));
+    if (oldVNode.tag !== newVNode.tag) {
+        el.replaceWith(render(newVNode));
         return;
     }
 
-    patchProps(el, oldV.props, newV.props);
-    patchChildren(el, oldV.children, newV.children);
+    patchProps(el, oldVNode.props, newVNode.props);
+    patchChildren(el, oldVNode.children, newVNode.children);
 }
 
 function patchChildren(parentEl, oldChildren, newChildren) {
@@ -143,12 +143,12 @@ function patchChildren(parentEl, oldChildren, newChildren) {
 
 export const createApp = (component, target) => {
     let currentVNode = component();
-    let rootNode = render(currentVNode);
-    mount(rootNode, target);
+    mount(render(currentVNode), target);
 
     return () => {
         const newVNode = component();
-        patch(target, currentVNode, newVNode);
+        // Using brute-force mount for now to ensure updates.
+        mount(render(newVNode), target);
         currentVNode = newVNode;
     };
 };

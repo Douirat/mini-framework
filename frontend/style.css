@@ -82,8 +82,54 @@ body {
 /* Game Container */
 .game-container {
     display: flex;
+    flex-direction: column; /* Changed to column for layout */
+    gap: 10px;
+    width: 100%;
+    align-items: center; /* Center game elements */
+}
+
+.game-main-area {
+    display: flex;
     gap: 20px;
     width: 100%;
+    justify-content: center;
+}
+
+.game-timer {
+    text-align: center;
+    padding: 5px;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #FFD700;
+    width: 100%;
+    background: #2c2c2c;
+    border-radius: 4px;
+}
+
+.player-status-container {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background: #2c2c2c;
+    color: white;
+    width: 100%;
+    border-radius: 4px;
+}
+
+.player-status {
+    padding: 5px 15px;
+    border-radius: 5px;
+    border: 1px solid #555;
+}
+
+.player-status .nickname {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.player-status.dead {
+    opacity: 0.5;
+    text-decoration: line-through;
 }
 
 /* Game Board */

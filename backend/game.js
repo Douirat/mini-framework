@@ -8,23 +8,8 @@ const MAP_HEIGHT_PX = MAP_HEIGHT_CELLS * CELL_SIZE;
 const TILE = { EMPTY: 0, BLOCK: 1, WALL: 2 };
 
 function generateMap() {
+  // Create a completely empty map for deterministic testing
   const map = Array(MAP_HEIGHT_CELLS).fill(null).map(() => Array(MAP_WIDTH_CELLS).fill(TILE.EMPTY));
-  for (let y = 1; y < MAP_HEIGHT_CELLS; y += 2) {
-    for (let x = 1; x < MAP_WIDTH_CELLS; x += 2) {
-      map[y][x] = TILE.WALL;
-    }
-  }
-  for (let y = 0; y < MAP_HEIGHT_CELLS; y++) {
-    for (let x = 0; x < MAP_WIDTH_CELLS; x++) {
-      if (map[y][x] === TILE.EMPTY) {
-        const isCorner = (y < 2 && x < 2) || (y < 2 && x > MAP_WIDTH_CELLS - 3) ||
-                         (y > MAP_HEIGHT_CELLS - 3 && x < 2) || (y > MAP_HEIGHT_CELLS - 3 && x > MAP_WIDTH_CELLS - 3);
-        if (!isCorner) {
-          map[y][x] = Math.random() < 0.75 ? TILE.BLOCK : TILE.EMPTY;
-        }
-      }
-    }
-  }
   return map;
 }
 
@@ -39,7 +24,7 @@ function createInitialGameState(players) {
     ];
     const gamePlayers = players.map((p, i) => ({
         id: p.id, nickname: p.nickname, ...initialPositions[i],
-        size: playerSize, lives: 3, speed: 2, bombs: 1, flame: 1, isAlive: true,
+        size: playerSize, lives: 3, speed: 2, bombs: 1, flame: 1, score: 0, isAlive: true,
     }));
     return { map, players: gamePlayers, bombs: [], explosions: [], powerUps: [] };
 }
@@ -65,10 +50,15 @@ function handleExplosions(gameState) {
     const { bombs, map, players, explosions } = gameState;
     const explodingBombs = bombs.filter(b => b.timer <= 0);
     if (explodingBombs.length === 0) return;
-    const newExplosionCells = new Set();
+
+    const explosionOwnerMap = new Map();
+    const allExplosionCells = new Set();
+
     explodingBombs.forEach(bomb => {
-        newExplosionCells.add(`${bomb.x},${bomb.y}`);
+        const explosionPath = new Set();
+        explosionPath.add(`${bomb.x},${bomb.y}`);
         const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+
         directions.forEach(([dx, dy]) => {
             for (let i = 1; i <= bomb.flame; i++) {
                 const x = bomb.x + dx * i;
@@ -76,11 +66,10 @@ function handleExplosions(gameState) {
                 if (x < 0 || x >= MAP_WIDTH_CELLS || y < 0 || y >= MAP_HEIGHT_CELLS) break;
                 const tile = map[y][x];
                 if (tile === TILE.WALL) break;
-                newExplosionCells.add(`${x},${y}`);
+                explosionPath.add(`${x},${y}`);
                 if (tile === TILE.BLOCK) {
                     map[y][x] = TILE.EMPTY;
-                    // Chance to spawn a power-up
-                    if (Math.random() < 0.3) { // 30% chance
+                    if (Math.random() < 0.3) {
                         const powerUpTypes = ['flame', 'bombs', 'speed'];
                         const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
                         gameState.powerUps.push({ x, y, type });
@@ -89,23 +78,49 @@ function handleExplosions(gameState) {
                 }
             }
         });
+
+        explosionPath.forEach(cell => {
+            explosionOwnerMap.set(cell, bomb.ownerId);
+            allExplosionCells.add(cell);
+        });
     });
-    if (newExplosionCells.size > 0) {
-        const explosionData = { cells: Array.from(newExplosionCells).map(s => ({x: parseInt(s.split(',')[0]), y: parseInt(s.split(',')[1])})), timer: 0.5 };
+
+    if (allExplosionCells.size > 0) {
+        const explosionData = { cells: Array.from(allExplosionCells).map(s => ({x: parseInt(s.split(',')[0]), y: parseInt(s.split(',')[1])})), timer: 0.5 };
         explosions.push(explosionData);
+        console.log("Explosion cells:", Array.from(allExplosionCells));
+
+        const playersHitThisTick = new Set();
+
         players.forEach(player => {
             if (!player.isAlive) return;
 
             const playerCellX = Math.floor((player.x + player.size / 2) / CELL_SIZE);
             const playerCellY = Math.floor((player.y + player.size / 2) / CELL_SIZE);
-            if (newExplosionCells.has(`${playerCellX},${playerCellY}`)) {
+            const cellKey = `${playerCellX},${playerCellY}`;
+            console.log(`Checking player ${player.id} at (${playerCellX}, ${playerCellY})`);
+
+            if (allExplosionCells.has(cellKey) && !playersHitThisTick.has(player.id)) {
+                console.log(`Player ${player.id} was hit!`);
+                playersHitThisTick.add(player.id); // Player can only be hit once per tick
                 player.lives--;
+
                 if (player.lives <= 0) {
                     player.isAlive = false;
+                }
+
+                const ownerId = explosionOwnerMap.get(cellKey);
+                if (ownerId && ownerId !== player.id) {
+                    const owner = players.find(p => p.id === ownerId);
+                    if (owner) {
+                        console.log(`Awarding 100 points to owner ${ownerId}`);
+                        owner.score += 100;
+                    }
                 }
             }
         });
     }
+
     gameState.bombs = bombs.filter(b => b.timer > 0);
 }
 

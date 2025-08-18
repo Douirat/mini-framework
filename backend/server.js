@@ -41,12 +41,16 @@ function startGame() {
   console.log('Game starting!');
   lobbyState.status = 'inprogress';
   mainGameState = createInitialGameState(lobbyState.players);
+  mainGameState.gameTimer = 180; // 3 minutes
   gameLoopInterval = setInterval(gameTick, GAME_TICK_RATE);
   broadcast({ type: 'START_GAME', payload: mainGameState });
 }
 
 function gameTick() {
     if (!mainGameState) return;
+
+    // 0. Decrement game timer
+    mainGameState.gameTimer -= GAME_TICK_RATE / 1000;
 
     // 1. Decrement bomb timers
     mainGameState.bombs.forEach(bomb => bomb.timer -= GAME_TICK_RATE / 1000);
@@ -63,14 +67,36 @@ function gameTick() {
 
     // 5. Check for win condition
     const alivePlayers = mainGameState.players.filter(p => p.isAlive);
-    if (alivePlayers.length <= 1) {
+    if (alivePlayers.length <= 1 || mainGameState.gameTimer <= 0) {
         clearInterval(gameLoopInterval);
-        const winner = alivePlayers.length === 1 ? alivePlayers[0] : null;
+
+        let winner = null;
+        // If one player is left, they are the winner.
+        if (alivePlayers.length === 1) {
+            winner = alivePlayers[0];
+        }
+        // If the timer runs out, the player with the highest score wins.
+        else if (mainGameState.gameTimer <= 0 && alivePlayers.length > 1) {
+            let maxScore = -1;
+            alivePlayers.forEach(p => {
+                if (p.score > maxScore) {
+                    maxScore = p.score;
+                }
+            });
+            const topPlayers = alivePlayers.filter(p => p.score === maxScore);
+            // If there's no tie for the highest score, we have a winner.
+            if (topPlayers.length === 1) {
+                winner = topPlayers[0];
+            }
+        }
+        // In all other cases (e.g., all players die simultaneously, or a score tie on timeout), it's a draw.
+
         console.log('Game Over! Winner:', winner ? winner.nickname : 'Draw');
         broadcast({
             type: 'GAME_OVER',
             payload: {
-                winner: winner ? { id: winner.id, nickname: winner.nickname } : null
+                winner: winner ? { id: winner.id, nickname: winner.nickname } : null,
+                players: mainGameState.players.map(p => ({ id: p.id, nickname: p.nickname, score: p.score })),
             }
         });
         mainGameState = null;
@@ -108,7 +134,7 @@ wss.on('connection', (ws) => {
 
     switch (data.type) {
       case 'JOIN_GAME':
-        if (lobbyState.players.length < 2 && lobbyState.status === 'waiting') {
+        if (lobbyState.players.length < 4 && lobbyState.status === 'waiting') {
           const newPlayer = { id: lobbyState.players.length + 1, ws: ws, nickname: data.payload.nickname };
           lobbyState.players.push(newPlayer);
           ws.playerId = newPlayer.id;
@@ -149,7 +175,7 @@ wss.on('connection', (ws) => {
                 lobbyState.status = 'waiting';
             }
             broadcastLobbyState();
-        } else {
+        } else if (mainGameState) {
             mainGameState.players = mainGameState.players.filter(p => p.id !== player.id);
         }
     }
