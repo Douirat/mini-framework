@@ -22,15 +22,27 @@ console.log("the new created virtual dom is: ", dom);
         "class": "container"
     },
     "children": [
-        [
+        
             {
                 "tag": "div",
                 "attrs": {
                     "class": "card"
                 },
-                "children": "Hello world"
+                "children": [
+                    "Hello world"
+                ]
+            },
+            {
+                "tag": "button",
+                "attrs": {
+                    "id": "btn"
+                    onclick: ƒ
+                },
+                "children": [
+                    "Click"
+                ]
             }
-        ]
+        
     ]
 }
 
