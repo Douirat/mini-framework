@@ -18,4 +18,5 @@ let dom = virtualize(
         }
     
 );
+
 render(dom)

@@ -1,3 +1,26 @@
+/*
+    <<The rendering system is the core engine of every frontend 
+    framework it's what turns your data components into real 
+    visible, HTML on the screen. >>
+--> What is the rendering system?
+    <1> Converts the virtula {tag, attrs, children} UI description into actual DOM nodes.
+    <2> updates the DOM when data changes or state changes.
+    <3> Does it so efficiently {only changes what's necessary}.
+
+    ==> Rendering is about creating the UI from data:
+        let user = {"div", {class:"user"}, [{"h1", {class:"name"}, ["bennacer"]}, {"h1", {class:"age"}, ["34"]}]}
+        ==> you want to display: 
+        <div clas="user">
+            <h1>Bennacer</h1>
+            <p>Age: 24</p>
+        </div>
+
+    ==> In vanilla js the developer will have to do all the DOM work himself:
+        let el = document.createElement("div");
+        But, framework's rendering system automates that for you,
+        render(vertualDOMObject, parent)
+*/
+
 export const render = (virtual_dom, parent = document.body) => {
     const el = document.createElement(virtual_dom.tag);
 
@@ -12,8 +35,8 @@ export const render = (virtual_dom, parent = document.body) => {
     }
     (virtual_dom.children || []).forEach(child => {
         console.log("The child is: ");
-        
-         if (child == null) return; // skip null or undefined
+
+        if (child == null) return; // skip null or undefined
         if (typeof child === "string" || typeof child === "number") {
             el.appendChild(document.createTextNode(child));
         } else {

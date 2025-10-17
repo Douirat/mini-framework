@@ -1,4 +1,11 @@
-export const virtualize = (tag, attrs, ...children) => {
+/*
+==>The Virtual DOM: The "Blueprint" of the UI
+    Instead of creating the DOM element directely, most frameworks use an intermediate representation
+    the virtual DOM( A treeof javascript objects describing what the UI should look like).
+    
+*/
+
+export const virtualize = (tag, attrs, children) => {
     return {
         tag, // maps to an html tag.
         attrs, // maps to an html attribute(id, class, onclick, data-*, style ...)
