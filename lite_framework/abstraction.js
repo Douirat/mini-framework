@@ -5,7 +5,7 @@
     
 */
 
-export const virtualize = (tag, attrs, children) => {
+export const virtualize = (tag, attrs = {}, children = []) => {
     return {
         tag, // maps to an html tag.
         attrs, // maps to an html attribute(id, class, onclick, data-*, style ...)

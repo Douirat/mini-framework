@@ -1,22 +1,28 @@
-import { virtualize } from "./abstraction.js"
+// import { virtualize } from "./abstraction.js"
 import { render } from "./renderer.js"
-let dom = virtualize(
-    "div",
-    { class: "container" },
-        {
-            tag: "div",
-            attrs: { class: "card" },
-            children: ["Hello world"]
-        },
-        {
-            tag: "button",
-            attrs: {
-                onclick: () => { console.log("The user has clicked on me!!!!!"); },
-                id: "btn"
-            },
-            children: ["Click"]
-        }
-    
-);
+import { Diff } from "./diffing.js"
+import { patch } from "./patch.js"
 
-render(dom)
+let oldVDOM = {
+    tag: "div",
+    props: { id: "app" },
+    children: [
+        { tag: "h1", children: ["Hello World"] },
+        { tag: "button", children: ["Count: 0"] }
+    ]
+}
+
+let newVDOM = {
+    tag: "div",
+    props: { id: "app" },
+    children: [
+        { tag: "h1", children: ["Hello World"] },
+        { tag: "button", children: ["Count: 1"] }
+    ]
+}
+
+render(oldVDOM)
+
+let patches = Diff(oldVDOM, newVDOM)
+
+patch(oldVDOM, newVDOM, patches)

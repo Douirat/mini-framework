@@ -3,7 +3,7 @@
     framework it's what turns your data components into real 
     visible, HTML on the screen. >>
 --> What is the rendering system?
-    <1> Converts the virtula {tag, attrs, children} UI description into actual DOM nodes.
+    <1> Converts the virtulal {tag, attrs, children} UI description into actual DOM nodes.
     <2> updates the DOM when data changes or state changes.
     <3> Does it so efficiently {only changes what's necessary}.
 
@@ -34,9 +34,7 @@ export const render = (virtual_dom, parent = document.body) => {
         }
     }
     (virtual_dom.children || []).forEach(child => {
-        console.log("The child is: ");
-
-        if (child == null) return; // skip null or undefined
+        if (child == null) return; // skip null or undefined.
         if (typeof child === "string" || typeof child === "number") {
             el.appendChild(document.createTextNode(child));
         } else {
