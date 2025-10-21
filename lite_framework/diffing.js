@@ -13,7 +13,7 @@
 
 
                         --- How Diffing works step by step? ---
-    let oldVDOM = {
+    let oldnode = {
                     tag: "div",
                     props: { id: "app" },
                     children: [
@@ -22,7 +22,7 @@
                             ]
                 }
     
-    let newVDOM = {
+    let newNode = {
                     tag: "div",
                     props: {id: "app"},
                     children: [
@@ -44,44 +44,22 @@
     Text nodes:
     <> if children are strings (text), compare them.
     <> if text differs -> update text content only.
-
 */
 
 // compare the old virtual dom with the new virtual DOM.
-export const Diff = (oldVDOM, newVDOM) => {
-    let patches = []
+export const Diff = (oldNode, newNode) => {
+    if (!oldNode) return { type: "create", node: newNode }
+    if (!newNode) return { type: "remove" }
+    if (oldNode?.tag != newNode?.tag) return { type: "replace", node: newNode }
+    if (!oldNode.tag && !newNode.tag && oldNode !== newNode) return { type: 'TEXT', text: newNode };
 
-    // Node doesn't exist - create it
-    if (!oldVDOM) {
-        patches.push({ type: "create", node: newVDOM })
-        return patches
+    const patches = []
+    const childLength = Math.max(oldNode.children.length, newNode.children.length);
+    for (let i = 0; i < childLength; i++) {
+        patches.push(Diff(oldNode?.children[i], newNode?.children[i]))
     }
-
-    // Different tag types - replace the node
-    if (oldVDOM.tag !== newVDOM.tag) {
-        patches.push({ type: "replace", node: newVDOM })
-        return patches
+    if (patches.length > 0) {
+        return { type: "update", childs: patches }
     }
-    // Text content changed
-    if (typeof oldVDOM.children?.[0] === "string" &&
-        oldVDOM.children[0] !== newVDOM.children[0]) {
-        patches.push({ type: "text", node: newVDOM, text: newVDOM.children[0]})
-    }
-
-    // Diff children recursively
-    const maxLength = Math.max(
-        oldVDOM.children?.length || 0,
-        newVDOM.children?.length || 0
-    )
-
-    for (let i = 0; i < maxLength; i++) {
-        const childPatches = Diff(oldVDOM.children?.[i], newVDOM.children?.[i])
-        if (childPatches.length > 0) {
-            patches.push(...childPatches)
-        }
-    }
-
-    return patches
-
 }
 

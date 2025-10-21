@@ -21,7 +21,7 @@
         render(vertualDOMObject, parent)
 */
 
-export const render = (virtual_dom, parent = document.body) => {
+export const render = (virtual_dom) => {
     const el = document.createElement(virtual_dom.tag);
 
     for (let [key, value] of Object.entries(virtual_dom.attrs || {})) {
@@ -38,12 +38,12 @@ export const render = (virtual_dom, parent = document.body) => {
         if (typeof child === "string" || typeof child === "number") {
             el.appendChild(document.createTextNode(child));
         } else {
-            render(child, el); // pass the correct parent
+           el.appendChild(render(child, el)); // pass the correct parent
         }
     });
 
-    parent.appendChild(el);
-};
+    return el
+}
 
 /*This mirrors the idea behind frameworks like React or Vue: separating the “description”
  of the UI from the actual DOM, allowing us to reason about UI in pure JavaScript objects 
