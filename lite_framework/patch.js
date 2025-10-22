@@ -14,11 +14,11 @@ export const patch = (patches, parent = document.querySelector('#root')) => {
             parent.parentNode.replaceChild(newNode, parent);
             break;
         case "remove":
-            console.log("patches to remove: ==>", patches.node);
+            // console.log("patches to remove: ==>", patches.node);
             document.body.removeChild(parent);
             break
         case "text":
-            console.log("patches to write: ==>", patches.text);
+            // console.log("patches to write: ==>", patches.text);
             parent.textContent = patches.text;
             break
         case "attributes":
@@ -31,7 +31,6 @@ export const patch = (patches, parent = document.querySelector('#root')) => {
                     parent.setAttribute(attr, patches.attrs[attr]);
                 }
             }
-
             // Recursively patch children
             patches.childs.forEach((childPatch, i) => {
                 if (parent.childNodes[i]) {
