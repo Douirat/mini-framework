@@ -30,7 +30,7 @@ console.log("the old virtual DOM: ", oldVDOM);
 
 
 const newVDOM = virtualize("div",
-  { id: "root", class: "updated_container" }, // attributes
+  { id: "root", class: "container" }, // attributes
   [
     virtualize("h1", {}, ["Welcome to the New App!"]), // text changed
     virtualize("p", {}, ["This paragraph has been updated."]), // text changed
@@ -65,6 +65,6 @@ document.body.appendChild(render(oldVDOM))
 
 let patches = Diff(oldVDOM, newVDOM)
 
-console.log(patches);
+console.log("patches: ===> ", patches);
 
-// patch(patches)
+patch(patches)
