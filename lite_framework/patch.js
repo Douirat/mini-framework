@@ -6,7 +6,7 @@ Reconciliation answers what changed; patching performs updates the browser
 */
 
 import { render } from "./renderer.js";
-export const patch = (patches, parent = document.querySelector('#root')) => {
+export const patch = (patches, parent) => {
     if (!patches) return;
     switch (patches.type) {
         case "replace":
