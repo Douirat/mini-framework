@@ -12,21 +12,32 @@
      --> 
 */
 
+import { notFound } from "./not_found.js"
+import { render } from "./renderer.js"
 export class Router {
+  #root = document.getElementById('root')
+
   constructor(routes = {}) {
     this.routes = routes
-    window.addEventListener("popstate", () => {
-
-    })
   }
 
   init() {
+    window.addEventListener("hashchange", () => {
+      this.navigate(window.location.hash.slice(1));
+    });
 
+    // Initial render
+    this.navigate(window.location.hash.slice(1) || "/");
   }
 
 
 
   navigate(path) {
-        let component = this.routes[path] || NotFound
+    console.log("the page the user wants to display is: ", path);
+    
+      let component = this.routes[path] || notFound
+      this.#root.innerHTML = ""
+      this.#root.appendChild(render(component))
+    
   }
 }

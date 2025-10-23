@@ -71,11 +71,7 @@ import {Router} from "./router.js"
 // patch(patches)
 
 const routes = {
-  "/": "HomeComponent",
-  "/about": "AboutComponent",
-  "/contact": "ContactComponent",
 };
 
-const appRoot = document.body
-let router = new Router(routes, appRoot)
-router.Init()
+let router = new Router(routes)
+router.init()
