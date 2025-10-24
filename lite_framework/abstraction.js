@@ -4,12 +4,14 @@
     the virtual DOM( A treeof javascript objects describing what the UI should look like).
     
 */
+let key = 0
 
-export const virtualize = (tag, attrs = {}, children = []) => {
+export const virtualize = (tag, attrs = {}, children = [], key=null) => {
     return {
         tag, // maps to an html tag.
         attrs, // maps to an html attribute(id, class, onclick, data-*, style ...)
-        children // nested elments or text nods
+        children,// nested elments or text nods
+        key
     }
 }
 

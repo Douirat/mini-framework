@@ -2,6 +2,7 @@ import { notFound } from "./not_found.js"
 import { render } from "./renderer.js"
 import { patch } from "./patch.js"
 import { Diff } from "./diffing.js"
+import { append_child, delete_child } from "./events.js"
 
 export class App {
   #root = document.getElementById('root')
@@ -9,6 +10,8 @@ export class App {
 
   constructor(router = {}) {
     this.router = router
+    this.append_child = append_child
+    this.delete_child = delete_child
   }
 
   init() {
