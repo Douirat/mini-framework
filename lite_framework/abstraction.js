@@ -11,7 +11,6 @@ export const virtualize = (tag, attrs = {}, children = [], key=null) => {
         tag, // maps to an html tag.
         attrs, // maps to an html attribute(id, class, onclick, data-*, style ...)
         children,// nested elments or text nods
-        key
     }
 }
 
