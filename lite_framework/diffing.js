@@ -53,15 +53,15 @@ export const Diff = (oldNode, newNode) => {
     if (oldNode?.tag != newNode?.tag) return { type: "replace", node: newNode }
     if (!oldNode.tag && !newNode.tag && oldNode !== newNode) return { type: 'text', text: newNode };
 
- 
+
     if (oldNode.attrs && newNode.attrs) {
         for (let key in newNode.attrs) {
             if (newNode.attrs[key] !== oldNode.attrs[key]) {
-                return {type: "attributes", node: newNode}
+                return { type: "attributes", node: newNode }
             }
         }
     }
-  
+
 
     const patches = []
     const childLength = Math.max(oldNode.children.length, newNode.children.length);
