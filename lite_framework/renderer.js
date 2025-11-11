@@ -24,6 +24,10 @@
 export const render = (virtual_dom) => {
     const el = document.createElement(virtual_dom.tag);
 
+
+    // Attach the key to the real DOM element
+    el.dataset.key = virtual_dom.key;
+
     for (let [key, value] of Object.entries(virtual_dom.attrs || {})) {
         if (key.startsWith("on") && typeof value === "function") {
             el.addEventListener(key.slice(2).toLowerCase(), value);
@@ -38,7 +42,7 @@ export const render = (virtual_dom) => {
         if (typeof child === "string" || typeof child === "number") {
             el.appendChild(document.createTextNode(child));
         } else {
-           el.appendChild(render(child, el)); // pass the correct parent
+            el.appendChild(render(child, el)); // pass the correct parent
         }
     });
 

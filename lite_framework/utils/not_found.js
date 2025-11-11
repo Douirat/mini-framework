@@ -1,4 +1,4 @@
-import { virtualize } from "./abstraction.js";
+import { virtualize } from "../abstraction.js";
 
 export const notFound = virtualize("div", { id: "not-found", class: "container" }, [
     virtualize("header", { class: "app-header" }, [
