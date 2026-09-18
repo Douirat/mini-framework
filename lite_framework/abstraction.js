@@ -1,7 +1,7 @@
 /*
 ==>The Virtual DOM: The "Blueprint" of the UI
     Instead of creating the DOM element directely, most frameworks use an intermediate representation
-    the virtual DOM( A treeof javascript objects describing what the UI should look like).
+    the virtual DOM( A tree of javascript objects describing what the UI should look like).
     
 */
 let next_key = 0
@@ -10,12 +10,12 @@ export const virtualize = (tag, attrs = {}, children = []) => {
     return {
         tag, // maps to an html tag.
         attrs, // maps to an html attribute(id, class, onclick, data-*, style ...)
-        children,// nested elments or text nods
+        children,// nested elements or text nods
         key: next_key
     }
 }
 
-// the purpose of this function is to virtualize the representation of an HTML element, instead of creating 
+// the purpose of this function is to virtualize the representation of an HTML element, instead of creating
 // the actual DOM node immediately,
 
 
@@ -31,7 +31,6 @@ console.log("the new created virtual dom is: ", dom);
         "class": "container"
     },
     "children": [
-        
             {
                 "tag": "div",
                 "attrs": {
@@ -51,7 +50,7 @@ console.log("the new created virtual dom is: ", dom);
                     "Click"
                 ]
             }
-        
+
     ]
 }
 
