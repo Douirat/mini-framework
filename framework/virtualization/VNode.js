@@ -1,4 +1,4 @@
-export class VirtualDOM {
+export class VNode {
 
     // JavaScript representation of a DOM node:
     /**
@@ -71,9 +71,15 @@ export class VirtualDOM {
     */
     properties;
 
+    /**
+     *@attributes events:
+     *Since javascript is an object oriented language the DOM element is expected to have an event covering the user's
+     *interaction with my application associated with it like a (click, hover, ...etc)
+     */
+    events;
 
     /**
-    * @attributes properties:
+    * @attributes children:
     * Yes — exactly as you described.
     *children represents the contents nested inside the node.
 
@@ -84,18 +90,26 @@ export class VirtualDOM {
     → p
     → button
 
-Each child is itself another virtual node.
+    Each child is itself another virtual node.
 
-So you get a recursive structure:
+    So you get a recursive structure:
 
-VNode
+    VNode
 
-→ children: VNode[]
-→ each VNode
-→ children: VNode[]
-→ etc.
+    → children: VNode[]
+    → each VNode
+    → children: VNode[]
+    → etc.
 
-This recursive structure is what makes it possible to represent the entire UI as a tree.
+    *This recursive structure is what makes it possible to represent the entire UI as a tree.
      */
+    children;
+
+    /**
+     *since we are having a full representation to the DOM element, the element could have a text associated to it and
+     * this attribute will make it easier to insert the text to the DOM.
+     */
+    text
+
 
 }
